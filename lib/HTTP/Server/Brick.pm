@@ -1,9 +1,9 @@
 package HTTP::Server::Brick;
 
 use version;
-our $VERSION = qv('0.0.6');
+our $VERSION = qv('0.0.7');
 
-# $Id: Brick.pm,v 1.10 2007/06/24 13:01:33 aufflick Exp $
+# $Id: Brick.pm,v 1.12 2007/06/24 13:16:06 aufflick Exp $
 
 =head1 NAME
 
@@ -12,7 +12,7 @@ HTTP::Server::Brick - Simple pure perl http server for prototyping "in the style
 
 =head1 VERSION
 
-This document describes HTTP::Server::Brick version 0.0.6
+This document describes HTTP::Server::Brick version 0.0.7
 
 
 =head1 SYNOPSIS
@@ -162,7 +162,7 @@ Mutually exclusive with C<handler>.
 
 =item handler
 
-A coderef. See L<Handlers> below. Mutually exclusive with C<path>.
+A coderef. See L</Handlers> below. Mutually exclusive with C<path>.
 
 =item wildcard
 
@@ -170,7 +170,7 @@ If false, only exact matches will be served. If true, any requests based
 on the uri will be served. eg. if C<wildcard> is false, C<'/foo/bar'> will
 only match C<http://mysite.com/foo/bar> and not, say, C<http://mysite.com/foo/bar/sheep>.
 If C<wildcard> is true, on the other hand, it will match. A handler can
-access the path extension as described below in L<Handlers>.
+access the path extension as described below in L</Handlers>.
 
 Static handlers that are directories default to wildcard true.
 
@@ -214,7 +214,7 @@ sub mount {
 
 Actually starts the server - this will loop indefinately, or until
 the process recieves a C<HUP> signal in which case it will return after servicing
-any current request, or waiting for the next timeout (which defaults to 5s - see L<new>).
+any current request, or waiting for the next timeout (which defaults to 5s - see L</new>).
 
 =cut
 
@@ -570,7 +570,7 @@ prototypes with WEBrick and implemented them in (what I hope is) a Perlish way.
 
 =over
 
-=item It's version 0.0.6 - there's bound to be some bugs!
+=item It's version 0.0.7 - there's bound to be some bugs!
 
 =item The tests fail on windows due to forking limitations. I don't see any reason why the server itself won't work but I haven't tried it personally, and I have to figure out a way to test it from a test script that will work on Windows.
 
