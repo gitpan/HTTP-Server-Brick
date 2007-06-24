@@ -1,9 +1,9 @@
 package HTTP::Server::Brick;
 
 use version;
-our $VERSION = qv('0.0.5');
+our $VERSION = qv('0.0.6');
 
-# $Id: Brick.pm,v 1.8 2007/06/24 04:49:48 aufflick Exp $
+# $Id: Brick.pm,v 1.10 2007/06/24 13:01:33 aufflick Exp $
 
 =head1 NAME
 
@@ -12,7 +12,7 @@ HTTP::Server::Brick - Simple pure perl http server for prototyping "in the style
 
 =head1 VERSION
 
-This document describes HTTP::Server::Brick version 0.0.5
+This document describes HTTP::Server::Brick version 0.0.6
 
 
 =head1 SYNOPSIS
@@ -58,6 +58,10 @@ This document describes HTTP::Server::Brick version 0.0.5
             1;
         },
     });
+    
+    # start accepting requests (won't return unless/until process
+    # receives a HUP signal)
+    $server->start;
 
 =head1 DESCRIPTION
 
@@ -566,7 +570,7 @@ prototypes with WEBrick and implemented them in (what I hope is) a Perlish way.
 
 =over
 
-=item It's version 0.0.5 - there's bound to be some bugs!
+=item It's version 0.0.6 - there's bound to be some bugs!
 
 =item The tests fail on windows due to forking limitations. I don't see any reason why the server itself won't work but I haven't tried it personally, and I have to figure out a way to test it from a test script that will work on Windows.
 

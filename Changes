@@ -1,8 +1,11 @@
 Revision history for HTTP-Server-Brick
 
-$Id: Changes,v 1.1.1.1 2007/06/23 01:29:14 aufflick Exp $
+$Id: Changes,v 1.2 2007/06/24 13:01:33 aufflick Exp $
 
-0.0.5  Mon Jun 25
+0.0.6  Mon Jun 25
+       Minor pod and build changes
+
+0.0.5  Sun Jun 24
        Initial public release 
 
 0.0.1  Fri Jun 22 21:25:56 2007
