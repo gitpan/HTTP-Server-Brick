@@ -1,6 +1,9 @@
 Revision history for HTTP-Server-Brick
 
-$Id: Changes,v 1.3 2007/06/24 13:16:06 aufflick Exp $
+$Id: Changes,v 1.4 2007/06/25 06:05:55 aufflick Exp $
+
+0.0.8  Mon Jun 25
+       fixed mount_path issue and added test
 
 0.0.7  Mon Jun 25
        Minor pod changes

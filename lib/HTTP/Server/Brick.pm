@@ -1,9 +1,9 @@
 package HTTP::Server::Brick;
 
 use version;
-our $VERSION = qv('0.0.7');
+our $VERSION = qv('0.0.8');
 
-# $Id: Brick.pm,v 1.12 2007/06/24 13:16:06 aufflick Exp $
+# $Id: Brick.pm,v 1.15 2007/06/25 06:07:14 aufflick Exp $
 
 =head1 NAME
 
@@ -12,7 +12,7 @@ HTTP::Server::Brick - Simple pure perl http server for prototyping "in the style
 
 =head1 VERSION
 
-This document describes HTTP::Server::Brick version 0.0.7
+This document describes HTTP::Server::Brick version 0.0.8
 
 
 =head1 SYNOPSIS
@@ -296,7 +296,7 @@ sub _handle_dynamic_request {
     $res->base($match->{full_path});
 
     # stuff the match info into the request
-    $req->{mount_path} = $submap->{mount_path};
+    $req->{mount_path} = $match->{mount_path};
     $req->{path_info} = $match->{path_info} ? '/' . $match->{path_info} : undef;
 
     # actually call the handler
@@ -433,7 +433,7 @@ sub _map_request {
             if ($match_depth != $depth && !$map->[$match_depth]{$mount_path}{wildcard}) {
                 return;
             }
-            
+
             return(
                 $map->[$match_depth]{$mount_path},
                 {
@@ -570,7 +570,7 @@ prototypes with WEBrick and implemented them in (what I hope is) a Perlish way.
 
 =over
 
-=item It's version 0.0.7 - there's bound to be some bugs!
+=item It's version 0.0.8 - there's bound to be some bugs!
 
 =item The tests fail on windows due to forking limitations. I don't see any reason why the server itself won't work but I haven't tried it personally, and I have to figure out a way to test it from a test script that will work on Windows.
 
@@ -579,6 +579,9 @@ prototypes with WEBrick and implemented them in (what I hope is) a Perlish way.
 =item No attention has been given to propagating any exception text into the http error (although the exception/die message will appear in the error_log).
 
 =back
+
+If you want to check out the latest development version of HTTP::Server::Brick
+you can do so from my L<CVS Server|http://cvs.pumptheory.com/viewcvs/viewcvs.cgi/perl/HTTP-Server-Brick/>.
 
 Please report any bugs or feature requests to
 C<bug-http-server-brick@rt.cpan.org>, through the web interface at

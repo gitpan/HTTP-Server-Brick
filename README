@@ -1,6 +1,6 @@
-HTTP-Server-Brick version 0.0.7
+HTTP-Server-Brick version 0.0.8
 
-$Id: README,v 1.4 2007/06/24 13:16:06 aufflick Exp $
+$Id: README,v 1.7 2007/06/25 06:07:14 aufflick Exp $
 
 HTTP::Server::Brick allows you to quickly wrap a prototype web server around some
 Perl code. The underlying server daemon is HTTP::Daemon and the performance should
@@ -34,7 +34,7 @@ DEPENDENCIES
 
 BUGS AND LIMITATIONS
 
-It's version 0.0.7 - there's bound to be some bugs!
+It's version 0.0.8 - there's bound to be some bugs!
 
 The tests fail on windows due to forking limitations. I don't see
 any reason why the server itself won't work but I haven't tried it
@@ -47,10 +47,15 @@ No attention has been given to propagating any exception text into
 the http error (although the exception/die message will appear in
 the error_log).
 
+Latest versions are always available from CPAN. Development versions
+are available from my CVS repository:
+
+http://cvs.pumptheory.com/viewcvs/viewcvs.cgi/perl/HTTP-Server-Brick/
+
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2007, Mark Aufflick
+Copyright (C) 2007, Mark Aufflick <mark@aufflick.com> http://mark.aufflick.com
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
