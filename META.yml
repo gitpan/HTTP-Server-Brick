@@ -1,6 +1,6 @@
 ---
 name: HTTP-Server-Brick
-version: 0.0.8
+version: 0.0.9
 author:
   - 'Mark Aufflick <mark@aufflick.com>'
 abstract: Simple pure perl http server for prototyping "in the style of" Ruby's WEBrick
@@ -14,6 +14,7 @@ requires:
   LWP: 0
   LWP::MediaTypes: 0
   LWP::UserAgent: 0
+  Module::Build: 0
   Test::More: 0
   version: 0
 generated_by: Module::Build version 0.2808

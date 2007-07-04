@@ -1,9 +1,9 @@
 package HTTP::Server::Brick;
 
 use version;
-our $VERSION = qv('0.0.8');
+our $VERSION = qv('0.0.9');
 
-# $Id: Brick.pm,v 1.15 2007/06/25 06:07:14 aufflick Exp $
+# $Id: Brick.pm,v 1.19 2007/07/04 10:19:24 aufflick Exp $
 
 =head1 NAME
 
@@ -12,7 +12,7 @@ HTTP::Server::Brick - Simple pure perl http server for prototyping "in the style
 
 =head1 VERSION
 
-This document describes HTTP::Server::Brick version 0.0.8
+This document describes HTTP::Server::Brick version 0.0.9
 
 
 =head1 SYNOPSIS
@@ -93,7 +93,7 @@ $SIG{HUP} = sub { $__server_should_run = 0; };
 
 =head2 new
 
-C<new> takes six named arguments (all of which are optional):
+C<new> takes seven named arguments (all of which are optional):
 
 =over
 
@@ -123,6 +123,15 @@ Defaults to C<index.html>.
 
 If no index file is available (for a static path mount), do you want a clickable list
 of files in the directory be rendered? Defaults to true.
+
+=item leave_sig_pipe_handler_alone
+
+HTTP::Daemon, the http server module this package is built on, chokes in certain multiple-request
+situations unless you ignore PIPE signals. By default PIPE signals are ignored as soon as you start
+the server (and restored if the server exits via HUP). If you want to handle PIPE signals your own
+way, pass in a true value for this.
+
+If this makes no sense to you, just ignore it - the "right thing" will happen by default.
 
 =back
 
@@ -223,6 +232,12 @@ sub start {
 
     $__server_should_run = 1;
 
+    # HTTP::Daemon chokes on multiple simultaneous requests
+    unless ($self->{leave_sig_pipe_handler_alone}) {
+        $self->{_old_sig_pipe_handler} = $SIG{'PIPE'};
+        $SIG{'PIPE'} = 'IGNORE';
+    }
+
     $self->{daemon} = HTTP::Daemon->new(
         ReuseAddr => 1,
         LocalPort => $self->{port},
@@ -252,6 +267,11 @@ sub start {
         } else {
             $self->_send_error($conn, $req, RC_NOT_FOUND, ' Not Found in Site Map');
         }
+    }
+
+    
+    unless ($self->{leave_sig_pipe_handler_alone}) {
+        $SIG{'PIPE'} = $self->{_old_sig_pipe_handler};
     }
 
     1;
@@ -298,6 +318,18 @@ sub _handle_dynamic_request {
     # stuff the match info into the request
     $req->{mount_path} = $match->{mount_path};
     $req->{path_info} = $match->{path_info} ? '/' . $match->{path_info} : undef;
+
+    # and some other useful bits TODO: document (and, actually, subclass HTTP::Request...)
+    if ($req->header('Host') =~ /^(.*):(.*)$/) {
+        $req->{hostname} = $1;
+        $req->{port} = $2;
+    } elsif ($req->header('Host')) {
+        $req->{hostname} = $req->header('Host');
+        $req->{port} = $self->{daemon}->url->port;
+    } else {
+        $req->{hostname} = $self->{daemon}->url->host;
+        $req->{port} = $self->{daemon}->url->port;
+    }
 
     # actually call the handler
     if ( my $return_code = eval { $submap->{handler}->($req, $res) } ) {
@@ -570,7 +602,7 @@ prototypes with WEBrick and implemented them in (what I hope is) a Perlish way.
 
 =over
 
-=item It's version 0.0.8 - there's bound to be some bugs!
+=item It's version 0.0.9 - there's bound to be some bugs!
 
 =item The tests fail on windows due to forking limitations. I don't see any reason why the server itself won't work but I haven't tried it personally, and I have to figure out a way to test it from a test script that will work on Windows.
 
