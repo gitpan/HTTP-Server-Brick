@@ -1,9 +1,9 @@
 ---
 name: HTTP-Server-Brick
-version: 0.0.9
+version: 0.1.0
 author:
   - 'Mark Aufflick <mark@aufflick.com>'
-abstract: Simple pure perl http server for prototyping "in the style of" Ruby's WEBrick
+abstract: Simple pure perl http/https server for prototyping "in the style of" Ruby's WEBrick
 license: perl
 resources:
   license: http://dev.perl.org/licenses/
@@ -17,6 +17,8 @@ requires:
   Module::Build: 0
   Test::More: 0
   version: 0
+recommends:
+  HTTP::Daemon::SSL: 1.02
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

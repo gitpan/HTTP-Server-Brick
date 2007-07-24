@@ -1,9 +1,9 @@
 package HTTP::Server::Brick;
 
 use version;
-our $VERSION = qv('0.0.9');
+our $VERSION = qv('0.1.0');
 
-# $Id: Brick.pm,v 1.19 2007/07/04 10:19:24 aufflick Exp $
+# $Id: Brick.pm,v 1.23 2007/07/24 09:54:46 aufflick Exp $
 
 =head1 NAME
 
@@ -12,7 +12,7 @@ HTTP::Server::Brick - Simple pure perl http server for prototyping "in the style
 
 =head1 VERSION
 
-This document describes HTTP::Server::Brick version 0.0.9
+This document describes HTTP::Server::Brick version 0.1.0
 
 
 =head1 SYNOPSIS
@@ -63,6 +63,21 @@ This document describes HTTP::Server::Brick version 0.0.9
     # receives a HUP signal)
     $server->start;
 
+For an SSL (https) server, replace the C<new()> line above with:
+
+    use HTTP::Daemon::SSL;
+    
+    my $server = HTTP::Server::Brick->new(
+                                           port => 8889,
+                                           daemon_class => 'HTTP::Daemon::SSL',
+                                           daemon_args  => [
+                                              SSL_key_file  => 'my_ssl_key.pem',
+                                              SSL_cert_file => 'my_ssl_cert.pem',
+                                           ],
+                                         );
+
+See the docs of L<HTTP::Daemon::SSL> for other options.
+
 =head1 DESCRIPTION
 
 HTTP::Server::Brick allows you to quickly wrap a prototype web server around some
@@ -87,13 +102,17 @@ my $__singleton;
 my $__server_should_run = 0;
 
 $SIG{__WARN__} = sub { $__singleton ? $__singleton->_log( error => '[warn] ' . shift ) : CORE::warn(@_) };
-$SIG{__DIE__} = sub { $__singleton->_log( error => '[die] ' . $_[0] ) if $__singleton; CORE::die (@_) };
+$SIG{__DIE__} = sub {
+  CORE::die (@_) if $^S; # don't interfere with eval
+  $__singleton->_log( error => '[die] ' . $_[0] ) if $__singleton;
+  CORE::die (@_)
+};
 $SIG{HUP} = sub { $__server_should_run = 0; };
 
 
 =head2 new
 
-C<new> takes seven named arguments (all of which are optional):
+C<new> takes nine named arguments (all of which are optional):
 
 =over
 
@@ -133,6 +152,17 @@ way, pass in a true value for this.
 
 If this makes no sense to you, just ignore it - the "right thing" will happen by default.
 
+=item daemon_class
+
+The class which actually handles webserving.  The default is C<HTTP::Daemon>.
+If you want SSL, use C<HTTP::Daemon::SSL>.  Whatever class you use must inherit
+from HTTP::Daemon.
+
+=item daemon_args
+
+Sometimes you need to pass extra arguments to your C<daemon_class>, e.g. SSL
+configuration.  This arrayref will be dereferenced and passed to C<new>.
+
 =back
 
 =cut
@@ -141,12 +171,20 @@ sub new {
     my ($this, %args) = @_;
     my $class = ref($this) || $this;
 
+    if ($args{daemon_class} and not
+        eval { $args{daemon_class}->isa('HTTP::Daemon') }) {
+        die "daemon_class argument '$args{daemon_class}'" .
+          " must inherit from HTTP::Daemon";
+    }
+
     my $self = bless {
         _site_map => [],
         error_log => \*STDERR,
         access_log => \*STDOUT,
         directory_index_file => 'index.html',
         directory_indexing => 1,
+        daemon_class => 'HTTP::Daemon',
+        daemon_args  => [],
         %args,
        }, $class;
 
@@ -238,35 +276,45 @@ sub start {
         $SIG{'PIPE'} = 'IGNORE';
     }
 
-    $self->{daemon} = HTTP::Daemon->new(
+    $SIG{CHLD} = 'IGNORE' if $self->{fork};
+
+    $self->{daemon} = $self->{daemon_class}->new(
         ReuseAddr => 1,
         LocalPort => $self->{port},
         LocalHost => $self->{host},
         Timeout => 5,
-       ) or die $@;
+        @{ $self->{daemon_args} },
+       ) or die "Can't start daemon: $!";
 
     $self->_log(error => "Server started on " . $self->{daemon}->url);
 
     while ($__server_should_run) {
         my $conn = $self->{daemon}->accept or next;
-        my $req = $conn->get_request or next;
 
-        my ($submap, $match) = $self->_map_request($req);
+        # if we're a forking server, fork. The parent will wait for the next request.
+        # TODO: limit number of children
+        next if $self->{fork} and fork;
+        while (my $req = $conn->get_request) {
 
-        if ($submap) {
-            if (exists $submap->{path}) {
-                $self->_handle_static_request( $conn, $req, $submap, $match);
-                
-            } elsif (exists $submap->{handler}) {
-                $self->_handle_dynamic_request( $conn, $req, $submap, $match);
+          my ($submap, $match) = $self->_map_request($req);
 
-            } else {
-                $self->_send_error($conn, $req, RC_INTERNAL_SERVER_ERROR, 'Corrupt Site Map');
-            }
+          if ($submap) {
+              if (exists $submap->{path}) {
+                  $self->_handle_static_request( $conn, $req, $submap, $match);
+                  
+              } elsif (exists $submap->{handler}) {
+                  $self->_handle_dynamic_request( $conn, $req, $submap, $match);
 
-        } else {
-            $self->_send_error($conn, $req, RC_NOT_FOUND, ' Not Found in Site Map');
+              } else {
+                  $self->_send_error($conn, $req, RC_INTERNAL_SERVER_ERROR, 'Corrupt Site Map');
+              }
+
+          } else {
+              $self->_send_error($conn, $req, RC_NOT_FOUND, ' Not Found in Site Map');
+          }
         }
+        # should use a guard object here to protect against early exit leaving zombies
+        exit if $self->{fork};
     }
 
     
@@ -602,13 +650,15 @@ prototypes with WEBrick and implemented them in (what I hope is) a Perlish way.
 
 =over
 
-=item It's version 0.0.9 - there's bound to be some bugs!
+=item It's version 0.1.0 - there's bound to be some bugs!
 
 =item The tests fail on windows due to forking limitations. I don't see any reason why the server itself won't work but I haven't tried it personally, and I have to figure out a way to test it from a test script that will work on Windows.
 
-=item No consideration has been given to SSL.
+=item In forking mode there is no attempt to limit the number of forked children - beware of forking yourself ;)
 
 =item No attention has been given to propagating any exception text into the http error (although the exception/die message will appear in the error_log).
+
+=item Versions 1.02 and earlier of HTTP::Daemon::SSL has a feature/documentation conflict where it will never timeout. This means your server won't respond to a HUP signal until the next request is served. Version 1.03_01 (developer release) and later do not have this issue.
 
 =back
 
@@ -627,12 +677,22 @@ L<HTTP::Daemon>, L<HTTP::Daemon::App> and L<HTTP::Server::Simple> spring to mind
 
 =head1 AUTHOR
 
-Mark Aufflick  C<< <mark@aufflick.com> >> L<http://mark.aufflick.com/>
+=over
 
+=item Original version by: Mark Aufflick  C<< <mark@aufflick.com> >> L<http://mark.aufflick.com/>
+
+=item SSL and original forking support by: Mark Aufflick C<< <mark@aufflick.com> >>.
+
+=item Maintained by: Mark Aufflick
+
+=back
 
 =head1 LICENCE AND COPYRIGHT
 
-Copyright (c) 2007, Mark Aufflick C<< <mark@aufflick.com> >>. All rights reserved.
+Copyright (c) 2007, Mark Aufflick C<< <mark@aufflick.com> >>.
+Portions Copyright (c) 2007, Hans Dieter Pearcey C<< <hdp@pobox.com> >>
+
+All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
