@@ -1,4 +1,4 @@
-# $Id: MANIFEST,v 1.4 2007/07/24 04:21:19 aufflick Exp $
+# $Id: MANIFEST 348 2007-07-24 04:21:19Z aufflick $
 Build.PL
 Changes
 lib/HTTP/Server/Brick.pm

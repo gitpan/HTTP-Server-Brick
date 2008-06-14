@@ -1,9 +1,9 @@
 package HTTP::Server::Brick;
 
 use version;
-our $VERSION = qv('0.1.0');
+our $VERSION = qv(0.1.1);
 
-# $Id: Brick.pm,v 1.23 2007/07/24 09:54:46 aufflick Exp $
+# $Id: Brick.pm 361 2008-06-14 06:18:17Z aufflick $
 
 =head1 NAME
 
@@ -12,7 +12,7 @@ HTTP::Server::Brick - Simple pure perl http server for prototyping "in the style
 
 =head1 VERSION
 
-This document describes HTTP::Server::Brick version 0.1.0
+This document describes HTTP::Server::Brick version 0.1.1
 
 
 =head1 SYNOPSIS
@@ -295,6 +295,12 @@ sub start {
         # TODO: limit number of children
         next if $self->{fork} and fork;
         while (my $req = $conn->get_request) {
+
+          # Provide an X-Brick-Remote-IP header
+          my ($r_port, $r_iaddr) = Socket::unpack_sockaddr_in($conn->peername);
+          my $ip = Socket::inet_ntoa($r_iaddr);
+          $req->headers->remove_header('X-Brick-Remote-IP');
+          $req->header('X-Brick-Remote-IP' => $ip) if defined $ip;
 
           my ($submap, $match) = $self->_map_request($req);
 
@@ -585,6 +591,9 @@ This will always be empty for non-wildcard mounts.
 The documentation for L<HTTP::Request> will be of use for extracting all the other
 useful information.
 
+Added to the regular request headers created by L<HTTP::Request> is an X-Remote-IP header,
+which allows you to obtain the remote IP of the client. (Contributed by Hans Dieter Pearcey).
+
 =head2 Response
 
 The response object is an instance of L<HTTP::Response>. The useful operations (which
@@ -650,7 +659,7 @@ prototypes with WEBrick and implemented them in (what I hope is) a Perlish way.
 
 =over
 
-=item It's version 0.1.0 - there's bound to be some bugs!
+=item It's version 0.1.1 - there's bound to be some bugs!
 
 =item The tests fail on windows due to forking limitations. I don't see any reason why the server itself won't work but I haven't tried it personally, and I have to figure out a way to test it from a test script that will work on Windows.
 
@@ -681,7 +690,7 @@ L<HTTP::Daemon>, L<HTTP::Daemon::App> and L<HTTP::Server::Simple> spring to mind
 
 =item Original version by: Mark Aufflick  C<< <mark@aufflick.com> >> L<http://mark.aufflick.com/>
 
-=item SSL and original forking support by: Mark Aufflick C<< <mark@aufflick.com> >>.
+=item SSL and original forking support by: Hans Dieter Pearcey  C<< <hdp@pobox.com> >>
 
 =item Maintained by: Mark Aufflick
 
@@ -689,8 +698,8 @@ L<HTTP::Daemon>, L<HTTP::Daemon::App> and L<HTTP::Server::Simple> spring to mind
 
 =head1 LICENCE AND COPYRIGHT
 
-Copyright (c) 2007, Mark Aufflick C<< <mark@aufflick.com> >>.
-Portions Copyright (c) 2007, Hans Dieter Pearcey C<< <hdp@pobox.com> >>
+Copyright (c) 2007 2008, Mark Aufflick C<< <mark@aufflick.com> >>.
+Portions Copyright (c) 2007 2008, Hans Dieter Pearcey C<< <hdp@pobox.com> >>
 
 All rights reserved.
 

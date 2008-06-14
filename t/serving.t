@@ -1,7 +1,7 @@
-use Test::More tests => 1 + 66 * 4;
+use Test::More tests => 1 + 70 * 4;
 use strict;
 
-# $Id: serving.t,v 1.12 2007/07/24 04:21:19 aufflick Exp $
+# $Id: serving.t 358 2008-06-14 06:06:39Z aufflick $
 
 BEGIN {
     use_ok( 'HTTP::Server::Brick' );
@@ -14,7 +14,7 @@ use HTTP::Status;
 use POSIX qw(:sys_wait_h SIGHUP SIGKILL);
 
 my $port = $ENV{HSB_TEST_PORT} || 85432;
-my $host = $ENV{HSB_TEST_HOST} || 'localhost';
+my $host = $ENV{HSB_TEST_HOST} || '127.0.0.1';
 
 diag( '' );
 diag( '' );
@@ -158,6 +158,13 @@ sub run_tests {
       },
       wildcard => 1,
   });
+  $server->mount( '/test/remote-header' => {
+      handler => sub {
+          my ($req, $res) = @_;
+          $res->add_content("X-Brick-Remote-IP header is: " . $req->header('X-Brick-Remote-IP'));
+          1;
+      },
+  });
 
   # need to fork off a child to run the server
 
@@ -225,6 +232,8 @@ sub run_tests {
   test_url( $scheme, GET => "/test/data", RC_OK, qr!^2,3,5,7,11,13,17,19,23,29$!s,
            "HTTP::Response custom mime type", 'text/csv' );
 
+  test_url( $scheme, GET => '/test/remote-header', RC_OK, qr/^X-Brick-Remote-IP header is: 127.0.0.1$/,
+           "X-Brick-Remote-IP header", "text/html");
 
 
   cmp_ok(kill( SIGHUP, $child_pid), '==', 1, "Requesting server shutdown via HUP ($child_pid)");
