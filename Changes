@@ -1,6 +1,10 @@
 Revision history for HTTP-Server-Brick
 
-$Id: Changes 359 2008-06-14 06:11:14Z aufflick $
+$Id: Changes 362 2008-06-14 15:13:20Z aufflick $
+
+0.1.2  Sun June 15 2008
+       Fixed bug RT #29042 which caused a failure when no explicit port in url
+       Added better logging for failed handlers
 
 0.1.1  Sat June 14 2008
        Implemented X-Brick-Remote-IP header patch, submitted by hdp, and test for same

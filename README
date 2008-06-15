@@ -1,6 +1,6 @@
-HTTP-Server-Brick version 0.1.1
+HTTP-Server-Brick version 0.1.2
 
-$Id: README 359 2008-06-14 06:11:14Z aufflick $
+$Id: README 362 2008-06-14 15:13:20Z aufflick $
 
 HTTP::Server::Brick allows you to quickly wrap a prototype web server around some
 Perl code. The underlying server daemon is HTTP::Daemon and the performance should
@@ -34,7 +34,7 @@ DEPENDENCIES
 
 BUGS AND LIMITATIONS
 
-It's version 0.1.1 - there's bound to be some bugs!
+It's version 0.1.2 - there's bound to be some bugs!
 
 The tests fail on windows due to forking limitations. I don't see any
 reason why the server itself won't work but I haven't tried it
