@@ -1,7 +1,9 @@
-use Test::More tests => 1 + 70 * 4;
+use constant TEST_GROUP => 70;
+
+use Test::More tests => 1 + TEST_GROUP * 4;
 use strict;
 
-# $Id: serving.t 358 2008-06-14 06:06:39Z aufflick $
+# $Id: serving.t 366 2008-06-16 11:15:27Z aufflick $
 
 BEGIN {
     use_ok( 'HTTP::Server::Brick' );
@@ -28,7 +30,7 @@ run_tests( ssl => 0, fork => 1 );
 
 SKIP: {
   skip "can't run SSL tests without HTTP::Daemon::SSL and IO::Socket::SSL",
-    66 * 2
+    TEST_GROUP * 2
     unless eval "require HTTP::Daemon::SSL; require IO::Socket::SSL; 1";
   run_tests( ssl => 1, fork => 0 );
   run_tests( ssl => 1, fork => 1 );
