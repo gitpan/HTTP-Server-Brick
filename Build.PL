@@ -1,4 +1,4 @@
-# $Id: Build.PL 368 2008-06-16 11:20:02Z aufflick $
+# $Id$
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ my $builder = Module::Build->new(
     module_name         => 'HTTP::Server::Brick',
     license             => 'perl',
     dist_author         => 'Mark Aufflick <mark@aufflick.com>',
-    dist_version        => '0.1.3',
+    dist_version        => '0.1.4',
     dist_abstract       => 'Simple pure perl http/https server for prototyping "in the style of" Ruby\'s WEBrick',
     requires => {
         'Module::Build' => 0,

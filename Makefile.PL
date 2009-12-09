@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 297 2007-06-23 01:29:13Z aufflick $
+# $Id$
 
 use Module::Build::Compat;
 
